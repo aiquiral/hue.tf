@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>hue.tf - Help Centre</title>
+  <meta name="description" content="Answers to common questions, troubleshooting for blocked canvas access and reduced performance, and an overview of how hue.tf extracts colour palettes.">
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="./favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="icon" href="./favicon-16.png" type="image/png" sizes="16x16">
+  <link rel="icon" href="./favicon.ico" sizes="any">
+  <link rel="stylesheet" href="./css/style.css?v=20261119f">
+  <style>
+    .help-hero {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .help-hero h1 {
+      font-size: clamp(1.9rem, 3.5vw, 2.4rem);
+      font-weight: 900;
+      letter-spacing: -0.035em;
+      color: var(--ink);
+    }
+
+    .help-hero p {
+      max-width: 70ch;
+      color: var(--text-secondary);
+      font-size: 0.98rem;
+      line-height: 1.7;
+    }
+
+    .help-nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+    }
+
+    .help-nav a {
+      padding: 0.42rem 0.9rem;
+      border: 2px solid var(--ink);
+      border-radius: var(--radius-full);
+      background: #FFFFFF;
+      color: var(--ink);
+      box-shadow: 2px 2px 0 var(--ink);
+      font-size: 0.8rem;
+      font-weight: 800;
+      text-decoration: none;
+      transition: transform 0.13s ease, box-shadow 0.13s ease, background 0.15s ease;
+    }
+
+    .help-nav a:hover {
+      transform: translate(-1px, -1px);
+      background: var(--candy-yellow);
+      box-shadow: 3px 3px 0 var(--ink);
+    }
+
+    .help-section {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      scroll-margin-top: 110px;
+    }
+
+    .help-section + .help-section {
+      padding-top: 2rem;
+      border-top: 2px solid var(--border-subtle);
+    }
+
+    .help-section h2 {
+      color: var(--ink);
+      font-size: 1.55rem;
+      font-weight: 900;
+      letter-spacing: -0.025em;
+    }
+
+    .section-intro {
+      max-width: 75ch;
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+      line-height: 1.7;
+    }
+
+    .faq-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .faq-item {
+      overflow: hidden;
+      border: 2px solid var(--ink);
+      border-radius: var(--radius-sm);
+      background: var(--bg-surface-soft);
+      box-shadow: 3px 3px 0 var(--lilac-shadow);
+      scroll-margin-top: 110px;
+    }
+
+    .faq-item summary {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 1rem 1.15rem;
+      color: var(--ink);
+      font-weight: 800;
+      cursor: pointer;
+      list-style: none;
+    }
+
+    .faq-item summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .faq-item summary::after {
+      flex-shrink: 0;
+      color: var(--candy-pink);
+      content: '+';
+      font-size: 1.25rem;
+      line-height: 1;
+    }
+
+    .faq-item[open] summary::after {
+      content: '−';
+    }
+
+    .faq-answer {
+      padding: 0 1.15rem 1.15rem;
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+      line-height: 1.7;
+    }
+
+    .faq-answer p + p {
+      margin-top: 0.7rem;
+    }
+
+    .faq-answer a,
+    .troubleshooting-answer a {
+      color: var(--accent-primary);
+      font-weight: 700;
+    }
+
+    .troubleshooting-card {
+      padding: 1.5rem;
+      border: 2px solid var(--ink);
+      border-radius: var(--radius-md);
+      background: var(--bg-surface);
+      box-shadow: 5px 5px 0 var(--lilac-shadow);
+      scroll-margin-top: 110px;
+    }
+
+    .troubleshooting-card + .troubleshooting-card {
+      margin-top: 1.25rem;
+    }
+
+    .troubleshooting-card h3 {
+      color: var(--ink);
+      font-size: 1.2rem;
+      font-weight: 900;
+    }
+
+    .troubleshooting-lead {
+      margin-top: 0.4rem;
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+
+    .symptom-list {
+      margin: 0.9rem 0 1rem;
+      padding-left: 1.25rem;
+      color: var(--text-secondary);
+      font-size: 0.93rem;
+      line-height: 1.6;
+    }
+
+    .symptom-list li + li {
+      margin-top: 0.35rem;
+    }
+
+    .troubleshooting-answer {
+      padding: 1rem 1.1rem;
+      border-left: 4px solid var(--candy-pink);
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+      background: var(--bg-surface-soft);
+      color: var(--text-secondary);
+      font-size: 0.93rem;
+      line-height: 1.7;
+    }
+
+    .troubleshooting-answer p + p {
+      margin-top: 0.7rem;
+    }
+
+    .troubleshooting-answer strong {
+      color: var(--ink);
+    }
+
+    .how-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      list-style: none;
+    }
+
+    .how-step {
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+      padding: 1.1rem 1.2rem;
+      border: 2px solid var(--ink);
+      border-radius: var(--radius-sm);
+      background: var(--bg-surface-soft);
+      box-shadow: 3px 3px 0 var(--lilac-shadow);
+    }
+
+    .step-num {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      width: 36px;
+      height: 36px;
+      border: 2px solid var(--ink);
+      border-radius: 11px;
+      background: var(--candy-yellow);
+      box-shadow: 2px 2px 0 var(--ink);
+      color: var(--ink);
+      font-weight: 900;
+    }
+
+    .how-step h3 {
+      margin-bottom: 0.25rem;
+      color: var(--ink);
+      font-size: 1rem;
+      font-weight: 900;
+    }
+
+    .how-step p {
+      color: var(--text-secondary);
+      font-size: 0.92rem;
+      line-height: 1.65;
+    }
+
+    .privacy-note {
+      padding: 1rem 1.15rem;
+      border: 2px solid var(--ink);
+      border-radius: var(--radius-sm);
+      background: #E9FBF3;
+      box-shadow: 3px 3px 0 var(--lilac-shadow);
+      color: var(--text-secondary);
+      font-size: 0.92rem;
+      line-height: 1.7;
+    }
+
+    .privacy-note strong {
+      color: var(--ink);
+    }
+
+    .help-footer {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+    }
+
+    .help-footer-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+    }
+
+    @media (max-width: 720px) {
+      .help-page.panel-card {
+        padding: 1.35rem;
+      }
+
+      .help-footer {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="app-header">
+    <div class="brand">
+      <div class="brand-text-wrap">
+        <a href="./index.html">
+          <img class="brand-lockup" src="./logo.svg?v=20261118e" alt="hue.tf" width="282" height="100">
+        </a>
+        <span class="brand-tagline">Pixels To Palettes</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="main-container">
+    <section class="panel-card help-page" style="max-width: 1000px; width: 100%; margin: 0 auto; padding: 2.25rem; gap: 1.75rem;">
+
+      <div class="help-hero">
+        <h1>Help Centre</h1>
+        <p>
+          Common questions, fixes for browser privacy protections, and a look at
+          how the palette extraction works.
+        </p>
+        <nav class="help-nav" aria-label="Help sections">
+          <a href="#faq">FAQ</a>
+          <a href="#troubleshooting">Troubleshooting</a>
+          <a href="#how-it-works">How does it work?</a>
+        </nav>
+      </div>
+
+      <section id="faq" class="help-section">
+        <h2>FAQ</h2>
+
+        <div class="faq-list">
+          <details class="faq-item" id="what-is-hue-tf" open>
+            <summary>What is hue.tf?</summary>
+            <div class="faq-answer">
+              <p>
+                hue.tf is a browser-based colour palette tool. Drop in an image,
+                extract a palette, refine the colours, and export the result as a
+                showcase image, code tokens, or an Adobe swatch file.
+              </p>
+              <p>
+                All image processing happens in the current browser tab. The
+                original image is not uploaded to a server.
+              </p>
+            </div>
+          </details>
+
+          <details class="faq-item" id="image-formats">
+            <summary>Which image formats can be used?</summary>
+            <div class="faq-answer">
+              <p>
+                WebP, AVIF, PNG, JPEG, and SVG, depending on what the browser can
+                decode. If a file fails to open, convert it to PNG or JPEG and try
+                again.
+              </p>
+            </div>
+          </details>
+
+          <details class="faq-item" id="ase-files">
+            <summary>How to use the .ASE file?</summary>
+            <div class="faq-answer">
+              <p>
+                Download the <code>.ASE</code> file from the Adobe Swatch tab in
+                the Export dialog. In Photoshop, Illustrator, or InDesign, open
+                the Swatches panel menu and choose the option to open or import
+                swatches. In Procreate, use the palette import option.
+              </p>
+              <p>
+                The file contains the palette colours only, not the original image.
+              </p>
+            </div>
+          </details>
+
+          <details class="faq-item" id="report-issue">
+            <summary>How can a bug be reported or a feature requested?</summary>
+            <div class="faq-answer">
+              <p>
+                Open an issue on the
+                <a href="https://codeberg.org/aiquiral/hue.tf/issues" target="_blank" rel="noopener">Codeberg repository</a>.
+                Include the browser and version, operating system, steps to
+                reproduce, and whether canvas access is blocked. Screenshots are
+                helpful.
+              </p>
+            </div>
+          </details>
+
+          <details class="faq-item" id="support-project">
+            <summary>How can I support the project?</summary>
+            <div class="faq-answer">
+              <p>
+                Donations are optional and can be made through Ko-fi or Liberapay
+                on the <a href="./donate.html">donation page</a>. Sharing the tool,
+                reporting bugs, and suggesting improvements also help.
+              </p>
+              <p>
+                Sponsorship enquiries are welcome on the donation page as well.
+              </p>
+            </div>
+          </details>
+        </div>
+      </section>
+
+      <section id="troubleshooting" class="help-section">
+        <h2>Troubleshooting</h2>
+        <p class="section-intro">
+          Most unusual behaviour comes from one of two browser settings. The
+          questions in each group have a single shared answer.
+        </p>
+
+        <article id="canvas-access" class="troubleshooting-card">
+          <h3>Canvas pixel access is blocked</h3>
+          <p class="troubleshooting-lead">If several of these apply, canvas blocking is the likely cause:</p>
+          <ul class="symptom-list">
+            <li>Why do the extracted colours look random?</li>
+            <li>Why is the image replaced by stripes or noise?</li>
+            <li>Why does clicking the image do nothing?</li>
+            <li>Why does the magnifier show the wrong colours?</li>
+            <li>Why is the exported PNG blank or corrupted?</li>
+          </ul>
+          <div class="troubleshooting-answer">
+            <p>
+              Privacy-focused browsers and canvas-blocking extensions may block
+              or fake canvas pixel reads. hue.tf needs pixel access for automatic
+              extraction, pin sampling, the magnifier, and PNG rendering. The
+              browser cannot distinguish a local palette tool from a fingerprinting
+              script, so the protection applies to both.
+            </p>
+            <p>
+              If canvas access is allowed for this site - for example, by
+              whitelisting it in the extension or changing the browser's canvas
+              permission for the site - automatic extraction can work again. This
+              lowers the browser's fingerprinting protection for the site. Refresh
+              the page after changing the setting.
+            </p>
+            <p>
+              Manual HEX/RGB/HSL editing, shared palettes, SVG exports, code/token
+              exports, and <code>.ASE</code> exports continue to work. The screen
+              eyedropper may also work if the browser supports it.
+            </p>
+          </div>
+        </article>
+
+        <article id="jit-performance" class="troubleshooting-card">
+          <h3>JavaScript JIT is disabled</h3>
+          <p class="troubleshooting-lead">If several of these apply, reduced JavaScript performance is the likely cause:</p>
+          <ul class="symptom-list">
+            <li>Why do changes in the export options lag?</li>
+            <li>Why does the export preview take a long time to update?</li>
+            <li>Why do the laptop fans speed up during export?</li>
+            <li>Why is hue.tf slow in LibreWolf or Mullvad?</li>
+          </ul>
+          <div class="troubleshooting-answer">
+            <p>
+              Some privacy-hardened browsers disable JavaScript just-in-time (JIT)
+              compilation by default. hue.tf runs palette extraction and canvas
+              rendering in JavaScript, so these operations become CPU-heavy when
+              JIT is unavailable. This can cause lag, slow preview updates, and
+              higher fan activity. It is a performance limitation, not a network
+              transfer.
+            </p>
+            <p>
+              To reduce the load: use a smaller palette, turn off
+              <strong>Include original photo in card</strong>, choose
+              <strong>Ambient Palette Mesh</strong> or
+              <strong>Studio Obsidian Solid</strong> instead of the blurred image,
+              choose a smaller export ratio, and close other heavy tabs. A browser
+              or profile with JIT enabled will render faster if that trade-off is
+              acceptable.
+            </p>
+            <p>
+              No image or palette data is sent anywhere in either mode.
+            </p>
+          </div>
+        </article>
+      </section>
+
+      <section id="how-it-works" class="help-section">
+        <h2>How does it work?</h2>
+        <p class="section-intro">
+          hue.tf turns pixels into palettes locally in the browser. No image or
+          palette is sent to a server.
+        </p>
+
+        <ol class="how-steps">
+          <li class="how-step">
+            <span class="step-num" aria-hidden="true">1</span>
+            <div>
+              <h3>Decode locally</h3>
+              <p>
+                The browser decodes the selected image. The file is not uploaded.
+              </p>
+            </div>
+          </li>
+          <li class="how-step">
+            <span class="step-num" aria-hidden="true">2</span>
+            <div>
+              <h3>Sample pixels</h3>
+              <p>
+                A small copy of the image, 220 pixels wide, is sampled with a
+                seeded random generator. Area averaging can smooth noisy images.
+              </p>
+            </div>
+          </li>
+          <li class="how-step">
+            <span class="step-num" aria-hidden="true">3</span>
+            <div>
+              <h3>Cluster colours</h3>
+              <p>
+                Median cut and k-means select representative colours. The seed
+                makes results reproducible, and each colour is linked to a
+                position in the image for the pins.
+              </p>
+            </div>
+          </li>
+          <li class="how-step">
+            <span class="step-num" aria-hidden="true">4</span>
+            <div>
+              <h3>Refine and export</h3>
+              <p>
+                Edit values in HEX, RGB, or HSL; reorder or remove colours; then
+                export as PNG or SVG, CSS/SCSS/Tailwind/JSON, or an
+                <code>.ASE</code> swatch file.
+              </p>
+            </div>
+          </li>
+        </ol>
+
+        <div class="privacy-note">
+          <p>
+            <strong>Sharing:</strong> share links place the palette in the URL
+            hash. Browsers do not send the hash fragment to servers, but anyone
+            with the link can read the palette. The original image is not included.
+            There are no accounts and no server-side palette storage.
+          </p>
+        </div>
+      </section>
+
+      <div class="help-footer">
+        <a href="./index.html" class="btn btn-secondary">← Back to hue.tf</a>
+        <div class="help-footer-actions">
+          <a href="https://codeberg.org/aiquiral/hue.tf/issues" target="_blank" rel="noopener" class="btn btn-secondary">Report an issue</a>
+          <a href="./donate.html" class="btn btn-primary">Support hue.tf</a>
+        </div>
+      </div>
+
+    </section>
+  </main>
+
+</body>
+</html>

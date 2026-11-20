@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="hue.tf">
+  <title>hue.tf</title>
+  <g transform="rotate(-6 24 26)">
+    <rect x="5" y="7" width="38" height="38" rx="11" fill="#FFD60A" stroke="#1B1733" stroke-width="3"/>
+  </g>
+  <g transform="rotate(6 42 41)">
+    <rect x="24" y="22" width="35" height="35" rx="11" fill="#FF4D9D" stroke="#1B1733" stroke-width="3"/>
+  </g>
+</svg>

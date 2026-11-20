@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>hue.tf - Pixels To Palettes</title>
+  <meta name="description" content="Extract, customise, and export aesthetic colour palettes entirely client-side. Zero server uploads. 100% private.">
+
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="./favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="icon" href="./favicon-16.png" type="image/png" sizes="16x16">
+  <link rel="icon" href="./favicon.ico" sizes="any">
+
+  <link rel="stylesheet" href="./css/style.css?v=20261119f">
+</head>
+<body>
+
+  <!-- decorative doodles behind everything -->
+  <div class="doodles" aria-hidden="true">
+    <span class="doodle d-circle"></span>
+    <span class="doodle d-square"></span>
+    <span class="doodle d-star"></span>
+    <span class="doodle d-tri"></span>
+    <span class="doodle d-ring"></span>
+    <span class="doodle d-square2"></span>
+    <span class="doodle d-circle2"></span>
+    <span class="doodle d-star2"></span>
+  </div>
+
+  <header class="app-header">
+    <div class="brand">
+      <div class="brand-text-wrap">
+        <img class="brand-lockup" src="./logo.svg" alt="hue.tf" width="282" height="100">
+        <span class="brand-tagline">Pixels To Palettes</span>
+      </div>
+      <span class="badge-privacy">
+        <span class="badge-dot"></span> 100% Private (Zero Uploads)
+      </span>
+    </div>
+
+    <div class="header-actions">
+      <button id="btn-share" class="btn btn-secondary" title="Share via private zero-knowledge link" disabled>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+        Share
+      </button>
+      <button id="btn-export" class="btn btn-primary" title="Export Palette" disabled>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Export
+      </button>
+    </div>
+  </header>
+
+  <main class="main-container">
+
+    <div id="canvas-warning" class="canvas-warning" role="status" hidden>
+      <span><strong>Canvas access is blocked.</strong> Your browser is blocking canvas pixel data, so automatic colour extraction may not work as intended.</span>
+      <a href="./faq.html#canvas-access" class="btn btn-secondary btn-sm" target="_blank" rel="noopener">Learn More</a>
+    </div>
+
+    <section id="dropzone" class="dropzone-card">
+      <input type="file" id="file-input" accept="image/*" style="display: none;">
+      <div class="dropzone-content">
+        <div class="dropzone-icon">
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        </div>
+        <div class="dropzone-text">
+          <h3>Drop a picture.<br>Steal its <span class="word-sticker">colours</span>.</h3>
+          <p>WebP, AVIF, PNG, JPEG, SVG - decoded and sampled right here in your tab. Zero uploads, zero network, all yours.</p>
+        </div>
+        <div class="dropzone-samples">
+          <span>Quick Presets:</span>
+          <button class="sample-tag" data-sample="sunset">Sunset Landscape</button>
+          <button class="sample-tag" data-sample="cyberpunk">Cyberpunk Neon</button>
+          <button class="sample-tag" data-sample="minimal">Earthy Minimal</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="workspace" class="workspace-grid" style="display: none;">
+
+      <!-- left panel - image, pins -->
+      <div class="panel-card">
+        <div class="panel-header">
+          <h2 class="panel-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            The Photo
+          </h2>
+          <button id="btn-change-image" class="btn btn-secondary btn-sm">Change Image</button>
+        </div>
+
+        <div id="preview-container" class="preview-container">
+          <canvas id="image-canvas" class="preview-canvas" title="Drag colour pins on image or click anywhere to sample"></canvas>
+
+          <div id="pins-overlay" class="pins-overlay"></div>
+
+          <div id="magnifier-loupe" class="magnifier-loupe">
+            <canvas id="magnifier-canvas" class="magnifier-canvas" width="130" height="130"></canvas>
+            <div class="magnifier-crosshair"></div>
+            <div id="magnifier-badge" class="magnifier-badge">#FFFFFF</div>
+          </div>
+        </div>
+
+        <div class="eyedropper-banner">
+          <span>🎯 Drag pins on photo to re-sample • Click to add</span>
+          <button id="btn-screen-eyedropper" class="btn btn-secondary btn-sm" style="display: none;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m2 22 1-1h3l9-9"/><path d="M14 6l4 4"/><path d="m18 2 4 4"/></svg>
+            Screen Eyedropper
+          </button>
+        </div>
+
+        <div class="control-group">
+          <div class="control-label">
+            <span>Palette Size</span>
+            <span id="label-color-count" class="control-val">8 colours</span>
+          </div>
+          <input type="range" id="slider-color-count" class="range-slider" min="2" max="32" value="8">
+        </div>
+
+        <div class="control-group">
+          <div class="control-label">
+            <span>Sampling Seed & Variation</span>
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <span id="label-seed" class="control-val">Seed: 42</span>
+              <button id="btn-reroll-seed" class="btn btn-secondary btn-sm" title="Reroll Seed">
+                🎲 Shuffle
+              </button>
+            </div>
+          </div>
+          <input type="range" id="slider-seed" class="range-slider" min="1" max="9999" value="42">
+        </div>
+
+        <div class="control-group">
+          <div class="control-label">
+            <span>Area Averaging (Noise Smoothing)</span>
+            <span id="label-block-size" class="control-val">1px (Single Pixel)</span>
+          </div>
+          <input type="range" id="slider-block-size" class="range-slider" min="1" max="24" value="1">
+        </div>
+
+      </div>
+
+      <!-- right panel - palette swatches -->
+      <div class="panel-card palette-container">
+        <div class="panel-header">
+          <h2 class="panel-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>
+            Your Palette
+          </h2>
+
+          <div class="format-switcher">
+            <span class="format-switcher-label">Edit:</span>
+            <div class="segmented-control">
+              <button class="seg-btn active" data-mode="hex">HEX</button>
+              <button class="seg-btn" data-mode="rgb">RGB</button>
+              <button class="seg-btn" data-mode="hsl">HSL</button>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 0.5rem;">
+            <button id="btn-sort" class="btn btn-secondary btn-sm" title="Sort by Harmony">
+              ⚡ Smooth Sort
+            </button>
+            <button id="btn-add-color" class="btn btn-primary btn-sm" title="Add Swatch">
+              + Add Colour
+            </button>
+          </div>
+        </div>
+
+        <div id="swatches-grid" class="swatches-grid"></div>
+
+        <p style="font-size: 0.8rem; color: var(--text-muted); text-align: center;">
+          💡 Type values directly to edit • Drag cards to reorder with smooth animation • Click colour to open picker
+        </p>
+      </div>
+
+    </section>
+
+  </main>
+
+  <div id="export-modal" class="modal-backdrop">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 style="font-size: 1.25rem; font-weight: 700;">Export Palette</h3>
+        <button id="btn-close-export" class="btn btn-secondary btn-sm">✕</button>
+      </div>
+
+      <div class="modal-tabs">
+        <button class="tab-btn active" data-tab="tab-aesthetic">Showcase Card</button>
+        <button class="tab-btn" data-tab="tab-code">Code & Tokens</button>
+        <button class="tab-btn" data-tab="tab-swatch">Adobe Swatch (.ASE)</button>
+      </div>
+
+      <div class="modal-body">
+
+        <div id="tab-aesthetic" class="tab-content">
+          <img id="export-card-img" class="export-card-preview" alt="Showcase Card Preview">
+
+          <div class="control-group" style="margin-bottom: 1.25rem;">
+            <label class="control-label" for="input-card-title">Card Title</label>
+            <input type="text" id="input-card-title" class="text-input" value="Harmonised Palette" placeholder="Enter title for exported card...">
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin-bottom: 1.25rem;">
+            <div class="control-group">
+              <label class="control-label" for="select-aspect-ratio">Aspect Ratio</label>
+              <select id="select-aspect-ratio" class="btn btn-secondary" style="width: 100%; padding: 0.55rem; text-align: left;">
+                <option value="1:1" selected>1:1 - Square (1500 × 1500)</option>
+                <option value="4:5">4:5 - Portrait (1200 × 1500)</option>
+                <option value="5:4">5:4 - Landscape (1500 × 1200)</option>
+                <option value="4:3">4:3 - Classic (1600 × 1200)</option>
+                <option value="3:4">3:4 - Portrait (1200 × 1600)</option>
+                <option value="3:2">3:2 - Photo (1800 × 1200)</option>
+                <option value="2:3">2:3 - Tall Photo (1200 × 1800)</option>
+                <option value="16:9">16:9 - Widescreen (1920 × 1080)</option>
+                <option value="9:16">9:16 - Story (1080 × 1920)</option>
+              </select>
+            </div>
+
+            <div class="control-group">
+              <label class="control-label" for="select-swatch-layout">Swatch Layout</label>
+              <select id="select-swatch-layout" class="btn btn-secondary" style="width: 100%; padding: 0.55rem; text-align: left;">
+                <option value="vertical" selected>Vertical Strips</option>
+                <option value="horizontal">Horizontal Strips</option>
+                <option value="squares">Small Squares</option>
+              </select>
+              <span id="swatch-layout-hint" class="control-hint" style="display: none;">
+                Strips are unavailable above 10 colours - small squares will be used.
+              </span>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin-bottom: 1.5rem;">
+            <div class="control-group">
+              <label class="control-label" for="select-bg-mode">Background Style</label>
+              <select id="select-bg-mode" class="btn btn-secondary" style="width: 100%; padding: 0.55rem; text-align: left;">
+                <option value="blur" selected>Blurred Original Image</option>
+                <option value="mesh">Ambient Palette Mesh</option>
+                <option value="solid">Studio Obsidian Solid</option>
+              </select>
+            </div>
+
+            <div class="control-group" id="blur-slider-group">
+              <label class="control-label" for="slider-card-blur">Blur Intensity</label>
+              <input type="range" id="slider-card-blur" class="range-slider" min="10" max="60" value="30">
+            </div>
+          </div>
+
+          <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1rem; margin-bottom: 1.75rem; background: var(--bg-surface-elevated); padding: 0.85rem 1.25rem; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
+            <label class="form-toggle">
+              <input type="checkbox" id="check-include-image">
+              <span>Include original photo in card</span>
+            </label>
+
+            <label class="form-toggle">
+              <input type="checkbox" id="check-branding" checked>
+              <span>Include hue.tf logo &amp; watermark</span>
+            </label>
+
+            <button id="btn-web-share" class="btn btn-secondary btn-sm" style="display: none;">
+              📲 Share via OS
+            </button>
+          </div>
+
+          <div style="display: flex; gap: 0.75rem;">
+            <button id="btn-download-png" class="btn btn-primary" style="flex: 1;">
+              Download High-Res PNG (1500 × 1500)
+            </button>
+            <button id="btn-download-svg" class="btn btn-secondary">
+              Download Vector SVG
+            </button>
+          </div>
+        </div>
+
+        <div id="tab-code" class="tab-content" style="display: none;">
+          <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem;">
+            <button class="btn btn-secondary btn-sm format-pill active" data-fmt="css">CSS Variables</button>
+            <button class="btn btn-secondary btn-sm format-pill" data-fmt="scss">SCSS Variables</button>
+            <button class="btn btn-secondary btn-sm format-pill" data-fmt="tailwind">Tailwind Config</button>
+            <button class="btn btn-secondary btn-sm format-pill" data-fmt="json">JSON Tokens</button>
+            <button class="btn btn-secondary btn-sm format-pill" data-fmt="hex">Hex Codes</button>
+            <button class="btn btn-secondary btn-sm format-pill" data-fmt="hsl">HSL Values</button>
+          </div>
+
+          <pre id="code-output" class="code-preview-block"></pre>
+
+          <div style="display: flex; gap: 0.75rem;">
+            <button id="btn-copy-code" class="btn btn-primary">
+              📋 Copy to Clipboard
+            </button>
+            <button id="btn-download-code-file" class="btn btn-secondary">
+              💾 Download File
+            </button>
+          </div>
+        </div>
+
+        <div id="tab-swatch" class="tab-content" style="display: none;">
+          <div style="background: var(--bg-surface-soft); padding: 1.5rem; border-radius: var(--radius-md); border: 1px solid var(--border-subtle); margin-bottom: 1.5rem;">
+            <h4 style="margin-bottom: 0.5rem; font-size: 1.1rem;">Adobe Swatch Exchange (.ASE)</h4>
+            <p style="font-size: 0.88rem; color: var(--text-secondary); line-height: 1.6;">
+              Export your palette directly to Adobe Photoshop, Illustrator, InDesign, or Procreate.
+              The binary file is compiled locally in your browser with zero server transmission.
+            </p>
+          </div>
+          <button id="btn-download-ase" class="btn btn-primary">
+            Download .ASE Swatch File
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div id="share-modal" class="modal-backdrop">
+    <div class="modal-box" style="max-width: 600px;">
+      <div class="modal-header">
+        <h3 style="font-size: 1.25rem; font-weight: 700;">Zero-Knowledge Palette Link</h3>
+        <button id="btn-close-share" class="btn btn-secondary btn-sm">✕</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 1.25rem; line-height: 1.6;">
+          This link encodes your exact colour palette into the URL hash (<code style="color: var(--accent-primary);">#</code>).
+          Under web protocols, browsers never transmit the hash fragment to any web server or CDN log. Your palette data remains 100% private.
+        </p>
+
+        <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+          <input type="text" id="share-link-input" readonly class="btn btn-secondary" style="flex: 1; text-align: left; font-family: monospace; font-size: 0.82rem; cursor: text;">
+          <button id="btn-copy-share-link" class="btn btn-primary">
+            Copy Link
+          </button>
+        </div>
+
+        <div id="share-length-badge" style="font-size: 0.8rem; color: var(--accent-emerald);">
+          ✓ Compact binary encoding: only 128 characters for up to 32 colours
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="app-footer">
+    <div class="footer-content">
+      <div class="footer-brand-section">
+        <div class="brand">
+          <img class="brand-lockup brand-lockup--footer" src="./logo.svg?v=20261118e" alt="hue.tf" width="282" height="100">
+        </div>
+        <p class="footer-desc">
+          hue.tf is a privacy-first colour palette tool. All image decoding, quantisation, and palette generation run directly inside your browser tab with zero network transmission.
+        </p>
+      </div>
+
+      <div class="footer-links-section">
+        <div class="footer-col">
+          <h4>Open Source</h4>
+          <a href="https://codeberg.org/aiquiral/hue.tf" target="_blank" rel="noopener" class="footer-link">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><path d="M11.999.747A11.974 11.974 0 0 0 0 12.75c0 2.254.635 4.465 1.833 6.376L11.837 6.19c.072-.092.251-.092.323 0l4.178 5.402h-2.992l.065.239h3.113l.882 1.138h-3.674l.103.374h3.86l.777 1.003h-4.358l.135.483h4.593l.695.894h-5.038l.165.589h5.326l.609.785h-5.717l.182.65h6.038l.562.727h-6.397l.183.65h6.717A12.003 12.003 0 0 0 24 12.75 11.977 11.977 0 0 0 11.999.747zm3.654 19.104.182.65h5.326c.173-.204.353-.433.513-.65zm.385 1.377.18.65h3.563c.233-.198.485-.428.712-.65zm.383 1.377.182.648h1.203c.356-.204.685-.412 1.042-.648zz"/></svg>
+            <span class="footer-link-label">Codeberg Repo</span>
+          </a>
+          <span class="footer-badge">Free & Open Source</span>
+          <p class="footer-subtext">If you encounter any problems or want a new feature, <a href="https://codeberg.org/aiquiral/hue.tf/issues" target="_blank" rel="noopener" style="color: inherit; text-decoration: underline;">create an issue there</a>.</p>
+        </div>
+
+        <div class="footer-col">
+          <h4>Help</h4>
+          <a href="./faq.html" class="footer-link">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            <span class="footer-link-label">Help Centre</span>
+          </a>
+          <p class="footer-subtext">Questions, troubleshooting, and how extraction works.</p>
+        </div>
+
+        <div class="footer-col">
+          <h4>Support Development</h4>
+          <a href="./donate.html" class="footer-link">
+            <span aria-hidden="true">♥</span>
+            <span class="footer-link-label">Donate</span>
+          </a>
+          <p class="footer-subtext">Help keep hue.tf independent, open-source, and 100% tracker-free.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <span>🄯 hue.tf • Crafted for designers and developers • Made by <a href="https://aiquiral.me/" target="_blank" style="color: white;">Aiquiral</a></span>
+      <span class="privacy-lock">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        100% Local In-Browser Processing
+      </span>
+    </div>
+  </footer>
+
+  <div id="toast" class="toast">
+    <span id="toast-message">Copied to clipboard!</span>
+  </div>
+
+  <script src="./js/utils.js?v=20261119d"></script>
+  <script src="./js/quantiser.js?v=20261119d"></script>
+  <script src="./js/share.js?v=20261119d"></script>
+  <script src="./js/exporter.js?v=20261119d"></script>
+  <script src="./js/app.js?v=20261119d"></script>
+</body>
+</html>
